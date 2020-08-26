@@ -25,8 +25,25 @@ def initialize():
     db.connect()
     db.create_tables([Product], safe=True)
 
+
+def add_products():
+    for product in product_list:
+        try:
+            Product.create(product_name=product['product_name'],
+                           product_price=product['product_price'],
+                           product_quantity=product['product_quantity'],
+                           date_updated=product['date_updated'])
+        except IntegrityError:
+            product_record = Product.get(product_name=product['product_name'])
+            product_record.product_price = product['product_price']
+            product_record.product_quantity = product['product_quantity']
+            product_record.date_updated = product['date_updated']
+            product_record.save()
+
+
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def menu_loop():
     """Show the menu"""
@@ -46,18 +63,19 @@ def menu_loop():
         except ValueError:
             print("\nThat is not a valid entry. Please select 'v', 'a', or 'b'\n")
 
-def view_entry(search_query=None):
+
+def view_entry():
     """View product entry by product_id."""
-    # view_record = True
-    #
-    # while view_record:
-    #     # try:
+    view_record = True
+
+    while view_record:
+        pass
 
 def add_entry():
     """Add product entry."""
-    enter_record = True
+    add_record = True
 
-    while enter_record:
+    while add_record:
         try:
             prod_name = input("Please provide a product name. ").title()
             if prod_name.isnumeric():
@@ -78,8 +96,6 @@ def add_entry():
                     Product.create(product_name=prod_name,
                                    product_price=int(prod_price),
                                    product_quantity=prod_quantity)
-                    # print('\nSaved successfully!')
-                    # break
                 except IntegrityError:
                     product_record = Product.get(product_name=prod_name)
                     product_record.product_quantity = prod_quantity
@@ -93,6 +109,7 @@ def add_entry():
         except TypeError:
             print("\nNot a valid entry.\n")
 
+
 def backup_csv():
     """Backup the database to a CSV file."""
     with open('backup_inventory.csv', 'w', newline='') as csvfile:
@@ -102,20 +119,6 @@ def backup_csv():
 
         backup_writer.writerow(product.keys())
         backup_writer.writerows(product_backup.tuples())
-
-def add_products():
-    for product in product_list:
-        try:
-            Product.create(product_name=product['product_name'],
-                           product_price=product['product_price'],
-                           product_quantity=product['product_quantity'],
-                           date_updated=product['date_updated'])
-        except IntegrityError:
-            product_record = Product.get(product_name=product['product_name'])
-            product_record.product_price = product['product_price']
-            product_record.product_quantity = product['product_quantity']
-            product_record.date_updated = product['date_updated']
-            product_record.save()
 
 menu = OrderedDict([
     ('v', view_entry),
