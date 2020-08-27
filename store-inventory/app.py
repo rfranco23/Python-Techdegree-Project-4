@@ -69,7 +69,36 @@ def view_entry():
     view_record = True
 
     while view_record:
-        pass
+        try:
+            id = input("Please select a Product ID? ")
+            products = Product[id]
+            if id == '0' or id.isalpha():
+                raise ValueError
+            if products.product_id > Product.select().count():
+                raise DoesNotExist
+            product_db = Product.select().where(Product.product_id == products)
+            for product in product_db:
+                if len(str(products.product_price)) >= 3 or str(products.product_price)[-2:] == '00':
+                    products.product_price = str(products.product_price)[:-2] + '.' + str(products.product_price)[-2:]
+                elif len(str(products.product_price)) < 3:
+                     products.product_price = str(products.product_price)[:-1] + '.' + str(products.product_price)[-1:] + '0'
+
+                print('\n' + 'Product ID: ' + str(products.product_id))
+                print('Product Name: ' + products.product_name)
+                print('Product Price: ' + '$' + str(products.product_price))
+                print('Product Quantity: ' + str(products.product_quantity))
+                print('Date Added/Updated: ' + products.date_updated.date().strftime('%m/%d/%Y'), '\n')
+                print("N) next entry")
+                print('q) Return to the main menu\n')
+
+            next_action = input('Action: [N/q] ').lower().strip()
+            if next_action == 'q':
+                break
+        except ValueError:
+            print("\nNot a valid entry. Please try again.\n")
+        except DoesNotExist:
+            print("\nThat ID is out of range.\n")
+
 
 def add_entry():
     """Add product entry."""
@@ -86,7 +115,7 @@ def add_entry():
             prod_price = input("\nWhat is the price of {}? ".format(prod_name))
             if '.' in prod_price or '$' in prod_price:
                 prod_price = prod_price.replace('.', '').replace('$', '')
-            if '.' not in prod_price and '$' not in prod_price and len(prod_price) >= 1:
+            if '.' not in prod_price and '$' not in prod_price and len(prod_price) <= 2:
                 prod_price = prod_price + '00'
             if prod_price.isalpha():
                 raise TypeError
@@ -119,6 +148,7 @@ def backup_csv():
 
         backup_writer.writerow(product.keys())
         backup_writer.writerows(product_backup.tuples())
+        print("\nCSV file backed up successfully!\n")
 
 menu = OrderedDict([
     ('v', view_entry),
